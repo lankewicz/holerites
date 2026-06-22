@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PDFDocument } from 'pdf-lib';
 import JSZip from 'jszip';
@@ -13,14 +13,28 @@ import {
   Check, 
   X,
   FileCheck,
-  RefreshCw
+  RefreshCw,
+  Receipt,
+  CreditCard,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 // Configurando o worker do PDFJS localmente com o Vite (?url)
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
 
 export default function App() {
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
   const [holeriteFile, setHoleriteFile] = useState(null);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
+  };
   const [comprovanteFile, setComprovanteFile] = useState(null);
   
   const [isProcessing, setIsProcessing] = useState(false);
@@ -268,10 +282,20 @@ export default function App() {
   return (
     <div className="container">
       <header>
-        <h1>Divisor de Holerites & Comprovantes</h1>
-        <p className="subtitle">
-          Processe e separe os holerites com seus comprovantes de forma rápida, local e 100% segura.
-        </p>
+        <div className="logo-container">
+          <img src="logo_chico.png" alt="Chico Eletro Logo" className="logo-img" />
+        </div>
+        <div className="header-text">
+          <h1>Divisor de Holerites & Comprovantes</h1>
+          <p className="subtitle">
+            Processe e separe os holerites com seus comprovantes de forma rápida, local e 100% segura.
+          </p>
+        </div>
+        <div className="theme-toggle-container">
+          <button className="theme-toggle" onClick={toggleTheme} title="Alternar tema">
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+        </div>
       </header>
 
       {error && (
@@ -289,7 +313,6 @@ export default function App() {
             className={`drop-zone ${holeriteFile ? 'completed' : ''}`}
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, 'holerite')}
-            onClick={() => holeriteInputRef.current?.click()}
           >
             <input 
               type="file" 
@@ -299,7 +322,7 @@ export default function App() {
               onChange={(e) => handleFileChange(e, 'holerite')}
               disabled={isProcessing}
             />
-            <UploadCloud className="drop-icon" size={48} />
+             <Receipt className="drop-icon" size={48} />
             <h3>1. Arquivo de Holerites</h3>
             <p>Arraste o PDF de holerites aqui ou clique para selecionar</p>
             {holeriteFile && (
@@ -315,7 +338,6 @@ export default function App() {
             className={`drop-zone ${comprovanteFile ? 'completed' : ''}`}
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, 'comprovante')}
-            onClick={() => comprovanteInputRef.current?.click()}
           >
             <input 
               type="file" 
@@ -325,7 +347,7 @@ export default function App() {
               onChange={(e) => handleFileChange(e, 'comprovante')}
               disabled={isProcessing}
             />
-            <UploadCloud className="drop-icon" size={48} />
+            <CreditCard className="drop-icon" size={48} />
             <h3>2. Arquivo de Comprovantes</h3>
             <p>Arraste o PDF de comprovantes aqui ou clique para selecionar</p>
             {comprovanteFile && (
@@ -417,7 +439,7 @@ export default function App() {
       )}
 
       <footer>
-        <p>Desenvolvido localmente — Nenhum arquivo é transferido para servidores externos.</p>
+        <p>Processado localmente — Nenhum arquivo é transferido para servidores externos.</p>
       </footer>
     </div>
   );
